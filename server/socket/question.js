@@ -43,7 +43,7 @@ module.exports = function(socket) {
                       if (resultplay) {
                         var ques = {
                           code: 2,
-                          status: '400',
+                          status: '401',
                           mesange: 'Tiếp tục',
                           data: resultplay,
                         };
@@ -92,7 +92,7 @@ module.exports = function(socket) {
               if (resultplay) {
                 var ques = {
                   code: 2,
-                  status: '400',
+                  status: '401',
                   mesange: 'Tiếp tục',
                   data: resultplay,
                 };

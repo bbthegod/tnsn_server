@@ -61,7 +61,7 @@ async function create(req, res, next) {
             data: savedproblem,
           });
         } else {
-          res.status(400);
+          res.status(401);
         }
       })
       .catch((e) => {
@@ -99,7 +99,7 @@ async function update(req, res, next) {
             message: 'Sửa vấn đề thành công.',
           });
         } else {
-          res.status(400);
+          res.status(401);
         }
       })
       .catch((e) => next(e));

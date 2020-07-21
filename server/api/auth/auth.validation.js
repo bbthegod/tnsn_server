@@ -18,4 +18,21 @@ module.exports = {
       email: Joi.string().required(),
     },
   },
+  activeAccount: {
+    body: {
+      studentId: Joi.string().required(),
+      code: Joi.string().required(),
+    },
+  },
+  resend: {
+    body: {
+      studentId: Joi.string().required(),
+    },
+  },
+  change: {
+    body: {
+      studentId: Joi.string().required(),
+      email: Joi.string().required(),
+    },
+  },
 };

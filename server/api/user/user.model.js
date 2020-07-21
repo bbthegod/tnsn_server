@@ -9,11 +9,15 @@ const bcrypt = require('bcrypt');
 const UserSchema = new mongoose.Schema(
   {
     name: String,
-    studentId: String,
+    studentId: {
+      type: String,
+      unique: true,
+    },
     phone: String,
     class: String,
     email: {
       type: String,
+      unique: true,
       required: true,
     },
     password: {
@@ -22,7 +26,7 @@ const UserSchema = new mongoose.Schema(
     },
     isLocked: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     isOnline: {
       type: Boolean,
@@ -37,6 +41,13 @@ const UserSchema = new mongoose.Schema(
     playId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Play',
+    },
+    activationCode: {
+      type: String,
+    },
+    isActived: {
+      type: Boolean,
+      default: false,
     },
   },
   { collection: 'users', timestamps: true },

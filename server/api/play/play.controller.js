@@ -55,7 +55,7 @@ function GetPlay(req, res) {
               if (resultplay) {
                 res.json({
                   code: 2,
-                  status: '400',
+                  status: '401',
                   mesange: 'Tiếp tục',
                   data: resultplay,
                 });
@@ -85,7 +85,7 @@ function GetPlay(req, res) {
                   .catch((err) => {
                     res.json({
                       code: 2,
-                      status: '400',
+                      status: '401',
                       mesange: 'Bắt đầu thất bại',
                     });
                   });
@@ -95,14 +95,14 @@ function GetPlay(req, res) {
               console.log(err);
               res.json({
                 code: 2,
-                status: '400',
+                status: '401',
                 mesange: 'Bắt đầu thất bại',
               });
             });
         } else {
           res.json({
             code: 2,
-            status: '400',
+            status: '401',
             mesange: 'Không tìm thấy sinh viên ',
           });
         }
@@ -110,7 +110,7 @@ function GetPlay(req, res) {
       .catch((err) => {
         res.json({
           code: 2,
-          status: '400',
+          status: '401',
           mesange: 'Không tìm thấy sinh viên ',
         });
       });

@@ -50,7 +50,7 @@ function updateMe(req, res, next) {
   User.findOne({ studentId })
     .then(async (student) => {
       if (student && student.studentId != studentId) {
-        res.status(400).json({
+        res.status(401).json({
           code: 2,
           message: 'Đã tồn tại tài khoản',
         });
@@ -87,7 +87,7 @@ function create(req, res, next) {
   User.findOne({ studentId })
     .then(async (student) => {
       if (student) {
-        res.status(400).json({
+        res.status(401).json({
           code: 2,
           message: 'Đã tồn tại tài khoản',
         });
@@ -127,7 +127,7 @@ function update(req, res, next) {
   User.findOne({ studentId })
     .then(async (student) => {
       if (student && student.studentId != studentId) {
-        res.status(400).json({
+        res.status(401).json({
           code: 2,
           message: 'Đã tồn tại tài khoản',
         });

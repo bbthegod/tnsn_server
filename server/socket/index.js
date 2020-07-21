@@ -4,10 +4,6 @@ var index = function(socket) {
   socket.on(CONST.NAMESPACE.LOGIN, require('./start.js')(socket));
   socket.on(CONST.NAMESPACE.DISCONNECT, require('./disconect')(socket));
   socket.on(CONST.NAMESPACE.QUESTION, require('./question')(socket));
-
-  socket.on('callmore', () => {
-    socket.broadcast.emit('getmore');
-  });
 };
 
 module.exports = index;

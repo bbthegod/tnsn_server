@@ -79,7 +79,7 @@ async function create(req, res, next) {
             data: savedQuestion,
           });
         } else {
-          res.status(400).json({
+          res.status(401).json({
             code: 2,
             message: 'Thêm mới câu hỏi thất bại.',
           });
@@ -121,7 +121,7 @@ async function update(req, res, next) {
             message: 'Sửa mới câu hỏi thành công.',
           });
         } else {
-          res.status(400).json({
+          res.status(401).json({
             code: 2,
             message: 'Sửa mới câu hỏi thất bại.',
           });

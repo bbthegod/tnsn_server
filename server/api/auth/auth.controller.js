@@ -5,7 +5,7 @@ const APIError = require('../../helpers/APIError');
 const config = require('../../../config/config');
 const User = require('../user/user.model');
 const saltRounds = 10;
-
+const mail = require('../../helpers/mailing.js');
 /**
  * Trả về token và thông tin nếu đăng nhập thành công
  * @param req
@@ -25,21 +25,10 @@ function login(req, res, next) {
       bcrypt.compare(password, user.password, function(err, decode) {
         if (decode) {
           if (user.isLocked) {
-            user.isOnline = false;
-            user.save();
             return res
               .json({
                 code: 2,
                 message: 'Người dùng bị khoá',
-              })
-              .end();
-          } else if (user.isOnline) {
-            user.isOnline = false;
-            user.save();
-            return res
-              .json({
-                code: 2,
-                message: 'Người dùng đang online',
               })
               .end();
           } else {
@@ -66,6 +55,7 @@ function logout(req, res, next) {
   try {
     const user = req.auth;
     user.isOnline = false;
+    console.log(user.isOnline);
     user
       .save()
       .then(() => res.status(200).end())
@@ -95,38 +85,143 @@ function check(req, res, next) {
  * @param next
  * @returns {*}
  */
-function signup(req, res, next) {
+async function signup(req, res, next) {
   const { name, studentId, password, email, phone } = req.body;
-  User.findOne({ studentId })
-    .then(async (student) => {
-      if (student) {
-        res.status(400).json({
-          code: 2,
-          message: 'Đã tồn tại tài khoản',
-        });
-      } else {
-        var user = new User({
-          phone,
-          studentId,
-          password,
-          name,
-          email,
-        });
-        user
-          .save()
-          .then((result) => {
-            successResponse(user, res);
-          })
-          .catch((err) => {
-            next(err);
-          });
-      }
-    })
-    .catch((err) => {
-      next(err);
+  try {
+    var studentIdExist = await User.findOne({ studentId }).exec();
+    if (studentIdExist)
+      return res.status(401).json({
+        code: 2,
+        message: 'ID already exists',
+      });
+    var emailExist = await User.findOne({ email }).exec();
+    if (emailExist)
+      return res.status(401).json({
+        code: 2,
+        message: 'Email already exists',
+      });
+    let code, codeExist;
+    do {
+      code = Math.floor(Math.random() * (999999 - 100000) + 100000);
+      codeExist = await User.findOne({ activationCode: code }).exec();
+    } while (codeExist);
+    //=======================================================================
+    var user = new User({
+      phone,
+      studentId,
+      password,
+      name,
+      email,
+      activationCode: code,
     });
+    user
+      .save()
+      .then((result) => {
+        mail.sendMail(user.email, code);
+        return res.status(200).json({
+          code: 1,
+          message: 'Active your account',
+        });
+      })
+      .catch((err) => {
+        next(err);
+      });
+  } catch (error) {
+    next(error);
+  }
 }
 
+async function active(req, res, next) {
+  const { studentId, code } = req.body;
+  try {
+    var user = await User.findOne({ activationCode: code, studentId })
+      .exec()
+      .catch((e) => next(e));
+    if (user) {
+      if (user.isActived)
+        return res.status(200).json({
+          code: 2,
+          message: 'Account is actived',
+        });
+      await User.findByIdAndUpdate(user._id, { isLocked: false, isActived: true });
+      return res.status(200).json({
+        code: 1,
+        message: 'Active your account',
+      });
+    } else {
+      return res.status(401).json({
+        code: 2,
+        message: 'Activate failed',
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function resend(req, res, next) {
+  const { studentId } = req.body;
+  try {
+    var user = await User.findOne({ studentId })
+      .exec()
+      .catch((e) => next(e));
+    if (user) {
+      if (user.isActived)
+        return res.status(200).json({
+          code: 2,
+          message: 'Account is actived',
+        });
+      let code, codeExist;
+      do {
+        code = Math.floor(Math.random() * (999999 - 100000) + 100000);
+        codeExist = await User.findOne({ activationCode: code }).exec();
+      } while (codeExist);
+      user.activationCode = code;
+      user.save();
+      mail.sendMail(user.email, code);
+      return res.status(200).json({
+        code: 1,
+        message: 'Active your account',
+      });
+    } else {
+      return res.status(401).json({
+        code: 2,
+        message: 'Resend failed',
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function change(req, res, next) {
+  const { studentId, email } = req.body;
+  try {
+    var user = await User.findOne({ studentId })
+      .exec()
+      .catch((e) => next(e));
+    if (user) {
+      if (user.isActived)
+        return res.status(200).json({
+          code: 2,
+          message: 'Account is actived',
+        });
+      user.email = email;
+      user.save();
+      return res.status(200).json({
+        code: 1,
+        message: 'Email changed',
+      });
+    } else {
+      return res.status(401).json({
+        code: 2,
+        message: 'Resend failed',
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+}
 /**
  * Đăng kí token và trả về
  * @param req
@@ -152,7 +247,6 @@ function successResponse(user, res) {
     },
   });
 }
-
 /**
  * Trả về lỗi đăng nhập
  * @param req
@@ -164,4 +258,4 @@ function errorResponse(next) {
   return next(err);
 }
 
-module.exports = { login, logout, check, signup };
+module.exports = { login, logout, check, signup, active, resend, change };
