@@ -1,3 +1,4 @@
+const config = require('../../config/config');
 const nodemailer = require('nodemailer');
 const emailExistence = require('email-existence');
 
@@ -7,8 +8,8 @@ let transporter = nodemailer.createTransport({
   secure: false,
   requireTLS: true,
   auth: {
-    user: 'nguyenthanhtung13399@gmail.com', // generated ethereal user
-    pass: 'Pp2517339', // generated ethereal password
+    user: config.email,
+    pass: config.password,
   },
   tls: {
     rejectUnauthorized: false,
@@ -22,8 +23,8 @@ async function sendMail(receivers, code) {
   transporter.sendMail(
     {
       from: 'HIT Club HaUI <nguyenthanhtung13399@gmail.com>',
-      to: `${receivers}`, // list of receivers
-      subject: 'Activation Code', // Subject line
+      to: `${receivers}`,
+      subject: 'Activation Code',
       html: `
       <div
       style="
