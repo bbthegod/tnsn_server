@@ -16,6 +16,5 @@ router.route('/active').post(validate(authValidation.activeAccount), authCtrl.ac
 router.route('/resend').post(validate(authValidation.resend), authCtrl.resend);
 router.route('/change').post(validate(authValidation.change), authCtrl.change);
 router.route('/check').get(isAuthenticated(['user', 'admin', 'judge', 'receptionist']), authCtrl.check);
-router.route('/logout').get(authCtrl.logout);
 
 module.exports = router;

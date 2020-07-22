@@ -31,6 +31,13 @@ function login(req, res, next) {
                 message: 'Người dùng bị khoá',
               })
               .end();
+          } else if (user.isOnline) {
+            return res
+              .json({
+                code: 2,
+                message: 'Người dùng đang online',
+              })
+              .end();
           } else {
             return successResponse(user, res);
           }
@@ -42,27 +49,6 @@ function login(req, res, next) {
     .catch((err) => {
       next(err);
     });
-}
-
-/**
- * Đăng xuất
- * @param req
- * @param res
- * @param next
- * @returns {*}
- */
-function logout(req, res, next) {
-  try {
-    const user = req.auth;
-    user.isOnline = false;
-    console.log(user.isOnline);
-    user
-      .save()
-      .then(() => res.status(200).end())
-      .catch((e) => next(e));
-  } catch (error) {
-    next(error);
-  }
 }
 
 /**
@@ -233,6 +219,7 @@ function successResponse(user, res) {
   user.save();
   const token = jwt.sign(
     {
+      _id: user._id,
       studentId: user.studentId,
     },
     config.jwtSecret,
@@ -258,4 +245,4 @@ function errorResponse(next) {
   return next(err);
 }
 
-module.exports = { login, logout, check, signup, active, resend, change };
+module.exports = { login, check, signup, active, resend, change };
