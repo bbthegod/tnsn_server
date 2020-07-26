@@ -9,7 +9,6 @@ router
   .route('/')
   .get(isAuthenticated(['admin', 'judge', 'receptionist']), questionCtrl.list)
   .post(isAuthenticated(['admin']), validate(questionValidation.create), questionCtrl.create);
-
 router
   .route('/:questionId')
   .get(isAuthenticated(['admin', 'judge', 'receptionist']), questionCtrl.get)

@@ -24,7 +24,7 @@ module.exports = function(socket) {
                 } else {
                   result.history.questions[i].answer = play.history.questions[i].answer;
                 }
-                if (play.history.questions[i].answer != undefined) {
+                if (play.history.questions[i].answer != 'false') {
                   result.history.questions[i].answered = true;
                 }
               }

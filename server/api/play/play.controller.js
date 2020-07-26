@@ -44,6 +44,7 @@ function interview(req, res) {
 
 function GetPlay(req, res) {
   let body = req.body;
+  console.log(body);
   if (body) {
     User.findOne({ studentId: body.studentId })
       .then((user) => {
@@ -54,8 +55,7 @@ function GetPlay(req, res) {
             .then(async (resultplay) => {
               if (resultplay) {
                 res.json({
-                  code: 2,
-                  status: '401',
+                  code: 1,
                   mesange: 'Tiếp tục',
                   data: resultplay,
                 });
@@ -77,7 +77,6 @@ function GetPlay(req, res) {
                     await user.save();
                     res.json({
                       code: 1,
-                      status: '200',
                       mesange: 'Bắt đầu thành công',
                       data: playadd,
                     });
@@ -85,7 +84,6 @@ function GetPlay(req, res) {
                   .catch((err) => {
                     res.json({
                       code: 2,
-                      status: '401',
                       mesange: 'Bắt đầu thất bại',
                     });
                   });
@@ -95,14 +93,12 @@ function GetPlay(req, res) {
               console.log(err);
               res.json({
                 code: 2,
-                status: '401',
                 mesange: 'Bắt đầu thất bại',
               });
             });
         } else {
           res.json({
             code: 2,
-            status: '401',
             mesange: 'Không tìm thấy sinh viên ',
           });
         }
@@ -110,7 +106,6 @@ function GetPlay(req, res) {
       .catch((err) => {
         res.json({
           code: 2,
-          status: '401',
           mesange: 'Không tìm thấy sinh viên ',
         });
       });
