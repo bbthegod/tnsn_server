@@ -10,38 +10,20 @@ module.exports = function(socket) {
       switch (data.comand) {
         case 1000: {
           let play = data.data;
-          scoreCaculation(play);
-          User.findById(play.userID)
-            .then((user) => {
-              if (user && user.role == 'user') {
-                Play.findOne({
-                  userID: user._id,
-                })
-                  .populate('history.questions.questionId', 'options content')
-                  .populate('history.problems.problemId')
-                  .then(async (resultplay) => {
-                    if (resultplay) {
-                      var data = {
-                        code: 2,
-                        mesange: 'Tiếp tục',
-                        data: resultplay,
-                      };
-                      if (global.hshUserSocket.hasOwnProperty(user._id)) {
-                        const socketid = global.hshUserSocket[user._id];
-                        global.hshIdSocket[socketid].emit(CONST.NAMESPACE.QUESTION, data);
-                      } else {
-                        console.log('Error, check user: ' + user._id);
-                      }
-                    }
-                  })
-                  .catch((err) => {
-                    console.log(err);
-                  });
-              }
-            })
-            .catch((err) => {
-              console.log(err);
-            });
+          let result = await scoreCaculation(play);
+          if (result) {
+            var data = {
+              code: 2,
+              mesange: 'Tiếp tục',
+              data: result,
+            };
+            if (global.hshUserSocket.hasOwnProperty(result.userID)) {
+              const socketid = global.hshUserSocket[result.userID];
+              global.hshIdSocket[socketid].emit(CONST.NAMESPACE.QUESTION, data);
+            } else {
+              console.log('Error, check user: ' + result.userID);
+            }
+          }
           break;
         }
         case 2000: {
@@ -92,17 +74,17 @@ async function scoreCaculation(play) {
   result.time = play.time;
   let score = 0;
   for (let i = 0; i < play.history.questions.length; i++) {
-    let currentQuestion = result.history.questions[i];
-    if (play.history.questions[i].answer == currentQuestion.questionId.correctAnswer) {
-      currentQuestion.answer = currentQuestion.questionId.correctAnswer;
-      score += currentQuestion.questionId.score;
+    if (play.history.questions[i].answer == result.history.questions[i].questionId.correctAnswer) {
+      result.history.questions[i].answer = result.history.questions[i].questionId.correctAnswer;
+      score += result.history.questions[i].questionId.score;
     } else {
-      currentQuestion.answer = play.history.questions[i].answer;
+      result.history.questions[i].answer = play.history.questions[i].answer;
     }
     if (play.history.questions[i].answer != 'false') {
-      currentQuestion.answered = true;
+      result.history.questions[i].answered = true;
     }
   }
   result.totalScore = score;
   result.save();
+  return result;
 }

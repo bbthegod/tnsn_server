@@ -31,6 +31,18 @@ function login(req, res, next) {
                 message: 'Người dùng bị khoá',
               })
               .end();
+          } else if (!user.isActived) {
+            return res
+              .json({
+                code: 2,
+                user: {
+                  name: user.name,
+                  studentId: user.studentId,
+                  email: user.email,
+                },
+                message: 'Chưa xác nhận',
+              })
+              .end();
           } else if (user.isOnline) {
             return res
               .json({
@@ -78,13 +90,13 @@ async function signup(req, res, next) {
     if (studentIdExist)
       return res.status(401).json({
         code: 2,
-        message: 'ID already exists',
+        message: 'Mã sinh viên đã tồn tại !',
       });
     var emailExist = await User.findOne({ email }).exec();
     if (emailExist)
       return res.status(401).json({
         code: 2,
-        message: 'Email already exists',
+        message: 'Email đã tồn tại !',
       });
     let code, codeExist;
     do {
@@ -106,7 +118,7 @@ async function signup(req, res, next) {
         mail.sendMail(user.email, code);
         return res.status(200).json({
           code: 1,
-          message: 'Active your account',
+          message: 'Mã xác nhận đã được gửi đến email của bạn',
         });
       })
       .catch((err) => {
@@ -127,7 +139,7 @@ async function active(req, res, next) {
       if (user.isActived)
         return res.status(200).json({
           code: 2,
-          message: 'Account is actived',
+          message: 'Tài khoản đã được xác nhận !',
         });
       await User.findByIdAndUpdate(user._id, { isLocked: false, isActived: true });
       return res.status(200).json({
@@ -137,7 +149,7 @@ async function active(req, res, next) {
     } else {
       return res.status(401).json({
         code: 2,
-        message: 'Activate failed',
+        message: 'Người dùng không tồn tại !',
       });
     }
   } catch (error) {
@@ -155,7 +167,7 @@ async function resend(req, res, next) {
       if (user.isActived)
         return res.status(200).json({
           code: 2,
-          message: 'Account is actived',
+          message: 'Tài khoản đã được xác nhận !',
         });
       let code, codeExist;
       do {
@@ -167,7 +179,7 @@ async function resend(req, res, next) {
       mail.sendMail(user.email, code);
       return res.status(200).json({
         code: 1,
-        message: 'Active your account',
+        message: 'Mã xác nhận đã được gửi đến email của bạn',
       });
     } else {
       return res.status(401).json({
@@ -190,13 +202,19 @@ async function change(req, res, next) {
       if (user.isActived)
         return res.status(200).json({
           code: 2,
-          message: 'Account is actived',
+          message: 'Tài khoản đã được xác nhận !',
         });
       user.email = email;
       user.save();
+      let code, codeExist;
+      do {
+        code = Math.floor(Math.random() * (999999 - 100000) + 100000);
+        codeExist = await User.findOne({ activationCode: code }).exec();
+      } while (codeExist);
+      mail.sendMail(user.email, code);
       return res.status(200).json({
         code: 1,
-        message: 'Email changed',
+        message: 'Thay đổi email thành công, vui lòng kiểm tra hộp thư mới !',
       });
     } else {
       return res.status(401).json({
@@ -231,6 +249,7 @@ function successResponse(user, res) {
       name: user.name,
       role: user.role,
       studentId: user.studentId,
+      email: user.email,
     },
   });
 }
