@@ -76,7 +76,7 @@ app.use((req, res, next) => {
 });
 
 // log error in winston transports except when executing test suite
-if (config.env !== 'test') {
+if (config.env == 'test' && config.env == 'development') {
   app.use(
     expressWinston.errorLogger({
       winstonInstance,
